@@ -21,8 +21,8 @@ public class Imagenes {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "nombreImagen", length = 100, nullable = false)
-    private String nombre;
+    @Column(name = "urlImagen", length = 1000, nullable = false)
+    private String urlImagen;
 
     @ManyToOne
     @JoinColumn(name = "codigo_imagen")

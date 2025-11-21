@@ -19,9 +19,9 @@ public class Imagen {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "urlImagen", nullable = false)
+    @Column(name = "urlImagen", length = 1000, nullable = false)
     private String url;
 
-    @Column(name = "descripcionImagen", length = 100, nullable = true)
+    @Column(name = "descripcionImagen", length = 200, nullable = true)
     private String descripcion;
 }

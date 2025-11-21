@@ -21,29 +21,26 @@ public class Producto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "nombreProducto", length = 50, nullable = false)
+    @Column(name = "nombreProducto", length = 100, nullable = false)
     private String nombre;
 
-    @Column(name = "urlProducto", nullable = false)
+    @Column(name = "urlProducto", length = 1000, nullable = false)
     private String url;
 
-    @Column(name = "precio", length = 8, nullable = false)
+    @Column(name = "precio", nullable = false)
     private Double precio;
 
-    @Column(name = "descripcionProducto", length = 100, nullable = false)
+    @Column(name = "descripcionProducto", length = 500, nullable = false)
     private String descripcion;
 
-    @Column(name = "disponible", length = 10, nullable = false)
+    @Column(name = "disponible", nullable = false)
     private Boolean activo;
 
-    @Column(name = "destacado", length = 10, nullable = false)
+    @Column(name = "destacado", nullable = false)
     private Boolean destacado;
 
-    @Column(name = "stock", length = 100, nullable = false)
+    @Column(name = "stock", nullable = false)
     private Integer stock;
-
-    @Column(name = "linkMercadoLibre", length = 300, nullable = true)
-    private String linkMercadoLibre;
 
     @ManyToOne
     @JoinColumn(name = "codigo_categoria")
