@@ -19,39 +19,34 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1/productos")
 @Tag(name = "Productos", description = "API para gestión de productos")
-@CrossOrigin(origins = "*") // Agregar CORS aquí también
+@CrossOrigin(origins = "*")
 public class ProductoController {
 
     @Autowired
     private ProductoService productoService;
     
     @GetMapping
-    @Operation(summary = "Obtener todos los productos", description = "Devuelve una lista de todos los productos disponibles")
-    @ApiResponse(responseCode = "200", description = "Lista de productos obtenida exitosamente")
-    public ResponseEntity<List<ProductoDTO>> getAllProductos() {
+    @Operation(summary = "Obtener todos los productos")
+    public ResponseEntity<List<ProductoSimpleDTO>> getAllProductos() {
         List<Producto> productos = productoService.getAllProductos();
-        List<ProductoDTO> productosDTO = productos.stream()
-            .map(ProductoDTO::fromProducto)
+        List<ProductoSimpleDTO> productosDTO = productos.stream()
+            .map(ProductoSimpleDTO::fromProducto)
             .collect(Collectors.toList());
         return ResponseEntity.ok(productosDTO);
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Obtener producto por ID", description = "Devuelve un producto específico por su ID")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Producto encontrado"),
-        @ApiResponse(responseCode = "404", description = "Producto no encontrado")
-    })
-    public ResponseEntity<ProductoDTO> getProductoById(@PathVariable Integer id) {
+    @Operation(summary = "Obtener producto por ID")
+    public ResponseEntity<ProductoSimpleDTO> getProductoById(@PathVariable Integer id) {
         Producto producto = productoService.getProductoById(id);
         if (producto == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-        return ResponseEntity.ok(ProductoDTO.fromProducto(producto));
+        return ResponseEntity.ok(ProductoSimpleDTO.fromProducto(producto));
     }
 
-    // DTO corregido para exponer correctamente todos los campos
-    public static class ProductoDTO {
+    // DTO SIMPLE que maneja campos null
+    public static class ProductoSimpleDTO {
         public Integer id;
         public String nombre_producto;
         public Double precio;
@@ -63,8 +58,8 @@ public class ProductoController {
         public Boolean destacado;
         public Integer stock;
 
-        public static ProductoDTO fromProducto(Producto producto) {
-            ProductoDTO dto = new ProductoDTO();
+        public static ProductoSimpleDTO fromProducto(Producto producto) {
+            ProductoSimpleDTO dto = new ProductoSimpleDTO();
             dto.id = producto.getId();
             dto.nombre_producto = producto.getNombre();
             dto.precio = producto.getPrecio();
@@ -73,32 +68,34 @@ public class ProductoController {
             dto.destacado = producto.getDestacado();
             dto.stock = producto.getStock();
             
-            // CORRECCIÓN 1: Obtener URL de imagen correctamente
-            // Navega por la relación: Producto -> Imagenes -> Imagen -> url
-            if (producto.getImagenes() != null && 
-                producto.getImagenes().getImagen() != null && 
-                producto.getImagenes().getImagen().getUrl() != null) {
-                dto.url_imagen = producto.getImagenes().getImagen().getUrl();
-            } else {
-                // URL de imagen por defecto si no hay imagen
-                dto.url_imagen = "https://via.placeholder.com/300x300?text=Sin+Imagen";
+            // El campo URL del producto ES el link de Mercado Libre
+            dto.link_mercado = producto.getUrl() != null ? producto.getUrl() : "#";
+            
+            // Intentar obtener imagen de la relación, si no existe usar placeholder
+            try {
+                if (producto.getImagenes() != null && 
+                    producto.getImagenes().getImagen() != null && 
+                    producto.getImagenes().getImagen().getUrl() != null) {
+                    dto.url_imagen = producto.getImagenes().getImagen().getUrl();
+                } else {
+                    // Imagen por defecto
+                    dto.url_imagen = "https://via.placeholder.com/400x400/4DB6AC/FFFFFF?text=" + 
+                                    (producto.getNombre() != null ? producto.getNombre().replaceAll(" ", "+") : "Producto");
+                }
+            } catch (Exception e) {
+                dto.url_imagen = "https://via.placeholder.com/400x400/4DB6AC/FFFFFF?text=Producto";
             }
             
-            // CORRECCIÓN 2: Obtener link de Mercado Libre correctamente
-            // El campo 'url' del producto es el link a Mercado Libre
-            if (producto.getUrl() != null && !producto.getUrl().isEmpty()) {
-                dto.link_mercado = producto.getUrl();
-            } else {
-                // Link por defecto si no hay URL
-                dto.link_mercado = "https://www.mercadolibre.cl";
-            }
-            
-            // CORRECCIÓN 3: Obtener categoría correctamente
-            if (producto.getCategorias() != null && 
-                producto.getCategorias().getNombre() != null) {
-                dto.categoria = producto.getCategorias().getNombre();
-            } else {
-                dto.categoria = "Sin categoría";
+            // Intentar obtener categoría
+            try {
+                if (producto.getCategorias() != null && 
+                    producto.getCategorias().getNombre() != null) {
+                    dto.categoria = producto.getCategorias().getNombre();
+                } else {
+                    dto.categoria = "General";
+                }
+            } catch (Exception e) {
+                dto.categoria = "General";
             }
             
             return dto;
@@ -106,11 +103,17 @@ public class ProductoController {
     }
 
     @PostMapping
-    @Operation(summary = "Crear nuevo producto", description = "Crea un nuevo producto en el sistema")
-    @ApiResponse(responseCode = "201", description = "Producto creado exitosamente")
+    @Operation(summary = "Crear nuevo producto")
     public ResponseEntity<Producto> saveProducto(@RequestBody Producto producto) {
-        Producto nuevoProducto = productoService.saveProducto(producto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevoProducto);
+        try {
+            Producto nuevoProducto = productoService.saveProducto(producto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(nuevoProducto);
+        } catch (Exception e) {
+            // Log del error
+            System.err.println("Error al guardar producto: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PutMapping("/{id}")
