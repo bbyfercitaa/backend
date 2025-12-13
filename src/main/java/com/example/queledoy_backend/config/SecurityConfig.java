@@ -38,6 +38,9 @@ public class SecurityConfig {
                 // Endpoints públicos
                 .requestMatchers(
                     "/api/v1/auth/**",
+                    "/api/v1/usuarios/login",
+                    "/api/v1/usuarios/register",
+                    "/api/v1/usuarios",
                     "/api/v1/productos/**",
                     "/api/v1/categorias/**",
                     "/api/v1/categoria/**",
@@ -57,7 +60,6 @@ public class SecurityConfig {
                 
                 // Endpoints solo para ADMIN
                 .requestMatchers(
-                    "/api/v1/usuarios/**",
                     "/api/v1/roles/**"
                 ).hasRole("ADMIN")
                 
