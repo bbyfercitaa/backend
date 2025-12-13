@@ -39,8 +39,12 @@ public class RolController {
 
     @PutMapping("/{id}")
     public Rol updateRol(@PathVariable Integer id, @RequestBody Rol rol) {
-        rol.setId(id);
-        return rolService.saveRol(rol);
+        Rol existingRol = rolService.getRolById(id);
+        if (existingRol != null) {
+            existingRol.setNombre(rol.getNombre());
+            return rolService.saveRol(existingRol);
+        }
+        return null;
     }
 
     @DeleteMapping("/{id}")

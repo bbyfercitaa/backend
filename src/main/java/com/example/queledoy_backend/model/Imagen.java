@@ -1,10 +1,10 @@
 package com.example.queledoy_backend.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,9 +19,9 @@ public class Imagen {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "urlImagen", length = 1000, nullable = false)
+    @Column(name = "urlImagen", nullable = false)
     private String url;
 
-    @Column(name = "descripcionImagen", length = 200, nullable = true)
+    @Column(name = "descripcionImagen", length = 100, nullable = true)
     private String descripcion;
 }

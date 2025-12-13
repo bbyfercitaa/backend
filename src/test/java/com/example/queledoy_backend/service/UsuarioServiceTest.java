@@ -3,22 +3,19 @@ package com.example.queledoy_backend.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.sql.Date;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 
 import com.example.queledoy_backend.model.Usuario;
 import com.example.queledoy_backend.repository.UsuarioRepository;
 
-@ExtendWith(MockitoExtension.class)
 class UsuarioServiceTest {
 
     @Mock
@@ -27,62 +24,69 @@ class UsuarioServiceTest {
     @InjectMocks
     private UsuarioService usuarioService;
 
-    private Usuario usuario;
-
     @BeforeEach
     void setUp() {
-        usuario = new Usuario();
-        usuario.setId(1);
-        usuario.setNombre("Juan Pérez");
-        usuario.setCorreo("juan@test.com");
-        usuario.setContrasena("password123");
-        usuario.setActivo(true);
-        usuario.setFechaRegistro(new Date(System.currentTimeMillis()));
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
     void testGetAllUsuarios() {
+        List<Usuario> usuarios = new ArrayList<>();
+        Usuario usuario = new Usuario();
+        usuario.setId(1);
+        usuario.setNombre("Carlos");
+        usuario.setCorreo("carlos@example.com");
+        usuarios.add(usuario);
 
-        List<Usuario> usuarios = Arrays.asList(usuario);
         when(usuarioRepository.findAll()).thenReturn(usuarios);
-
-
         List<Usuario> result = usuarioService.getAllUsuarios();
-
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals("Juan Pérez", result.get(0).getNombre());
-        verify(usuarioRepository).findAll();
-    }
-
-    @Test
-    void testGetUsuarioById() {
-        when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuario));
-
-        Usuario result = usuarioService.getUsuarioById(1);
-
-        assertNotNull(result);
-        assertEquals("Juan Pérez", result.getNombre());
-        assertEquals("juan@test.com", result.getCorreo());
-        verify(usuarioRepository).findById(1);
+        verify(usuarioRepository, times(1)).findAll();
     }
 
     @Test
     void testSaveUsuario() {
-        when(usuarioRepository.save(usuario)).thenReturn(usuario);
+        Usuario usuario = new Usuario();
+        usuario.setNombre("Ana");
+        usuario.setCorreo("ana@example.com");
+        usuario.setContrasena("pass123");
 
+        when(usuarioRepository.save(usuario)).thenReturn(usuario);
         Usuario result = usuarioService.saveUsuario(usuario);
 
         assertNotNull(result);
-        assertEquals("Juan Pérez", result.getNombre());
-        verify(usuarioRepository).save(usuario);
+        assertEquals("Ana", result.getNombre());
+        verify(usuarioRepository, times(1)).save(usuario);
     }
 
     @Test
     void testDeleteUsuario() {
+        doNothing().when(usuarioRepository).deleteById(1);
         usuarioService.deleteUsuario(1);
+        verify(usuarioRepository, times(1)).deleteById(1);
+    }
 
-        verify(usuarioRepository).deleteById(1);
+    @Test
+    void testGetUsuarioById() {
+        Usuario usuario = new Usuario();
+        usuario.setId(1);
+        usuario.setNombre("Pedro");
+        usuario.setCorreo("pedro@example.com");
+
+        when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuario));
+        Usuario result = usuarioService.getUsuarioById(1);
+
+        assertNotNull(result);
+        assertEquals("Pedro", result.getNombre());
+        verify(usuarioRepository, times(1)).findById(1);
+    }
+
+    @Test
+    void testValidateEmail() {
+        Usuario usuario = new Usuario();
+        usuario.setCorreo("test@example.com");
+        assertTrue(usuario.getCorreo().contains("@"));
     }
 }

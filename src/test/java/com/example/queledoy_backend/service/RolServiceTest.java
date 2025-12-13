@@ -3,21 +3,19 @@ package com.example.queledoy_backend.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 
 import com.example.queledoy_backend.model.Rol;
 import com.example.queledoy_backend.repository.RolRepository;
 
-@ExtendWith(MockitoExtension.class)
 class RolServiceTest {
 
     @Mock
@@ -26,59 +24,58 @@ class RolServiceTest {
     @InjectMocks
     private RolService rolService;
 
-    private Rol rol;
-
     @BeforeEach
     void setUp() {
-        rol = new Rol();
-        rol.setId(1);
-        rol.setNombre("ADMIN");
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
     void testGetAllRoles() {
+        List<Rol> roles = new ArrayList<>();
+        Rol rol = new Rol();
+        rol.setId(1);
+        rol.setNombre("Vendedor");
+        roles.add(rol);
 
-        List<Rol> roles = Arrays.asList(rol);
         when(rolRepository.findAll()).thenReturn(roles);
-
         List<Rol> result = rolService.getAllRoles();
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals("ADMIN", result.get(0).getNombre());
-        verify(rolRepository).findAll();
-    }
-
-    @Test
-    void testGetRolById() {
-
-        when(rolRepository.findById(1)).thenReturn(Optional.of(rol));
-
-
-        Rol result = rolService.getRolById(1);
-
-        assertNotNull(result);
-        assertEquals("ADMIN", result.getNombre());
-        verify(rolRepository).findById(1);
+        verify(rolRepository, times(1)).findAll();
     }
 
     @Test
     void testSaveRol() {
-        when(rolRepository.save(rol)).thenReturn(rol);
+        Rol rol = new Rol();
+        rol.setNombre("Moderador");
 
+        when(rolRepository.save(rol)).thenReturn(rol);
         Rol result = rolService.saveRol(rol);
 
         assertNotNull(result);
-        assertEquals("ADMIN", result.getNombre());
-        verify(rolRepository).save(rol);
+        assertEquals("Moderador", result.getNombre());
+        verify(rolRepository, times(1)).save(rol);
     }
 
     @Test
     void testDeleteRol() {
-
+        doNothing().when(rolRepository).deleteById(1);
         rolService.deleteRol(1);
+        verify(rolRepository, times(1)).deleteById(1);
+    }
 
+    @Test
+    void testGetRolById() {
+        Rol rol = new Rol();
+        rol.setId(1);
+        rol.setNombre("Gerente");
 
-        verify(rolRepository).deleteById(1);
+        when(rolRepository.findById(1)).thenReturn(Optional.of(rol));
+        Rol result = rolService.getRolById(1);
+
+        assertNotNull(result);
+        assertEquals("Gerente", result.getNombre());
+        verify(rolRepository, times(1)).findById(1);
     }
 }

@@ -16,7 +16,7 @@ import com.example.queledoy_backend.service.ColorService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/color")
+@RequestMapping("/api/v1/colores")
 public class ColorController {
 
     @Autowired
@@ -39,8 +39,12 @@ public class ColorController {
 
     @PutMapping("/{id}")
     public Color updateColor(@PathVariable Integer id, @RequestBody Color color) {
-        color.setId(id);
-        return colorService.saveColor(color);
+        Color existingColor = colorService.getColorById(id);
+        if (existingColor != null) {
+            existingColor.setNombre(color.getNombre());
+            return colorService.saveColor(existingColor);
+        }
+        return null;
     }
 
     @DeleteMapping("/{id}")

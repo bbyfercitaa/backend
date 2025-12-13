@@ -16,7 +16,7 @@ import com.example.queledoy_backend.service.ImagenService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/imagen")
+@RequestMapping("/api/v1/imagenes")
 public class ImagenController {
 
     @Autowired
@@ -39,8 +39,13 @@ public class ImagenController {
 
     @PutMapping("/{id}")
     public Imagen updateImagen(@PathVariable Integer id, @RequestBody Imagen imagen) {
-        imagen.setId(id);
-        return imagenService.saveImagen(imagen);
+        Imagen existingImagen = imagenService.getImagenById(id);
+        if (existingImagen != null) {
+            existingImagen.setUrl(imagen.getUrl());
+            existingImagen.setDescripcion(imagen.getDescripcion());
+            return imagenService.saveImagen(existingImagen);
+        }
+        return null;
     }
 
     @DeleteMapping("/{id}")

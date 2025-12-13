@@ -28,4 +28,12 @@ public class UsuarioService {
     public void deleteUsuario(Integer id) {
         usuarioRepository.deleteById(id);
     }
+
+    public Usuario findByCorreo(String email) {
+        return usuarioRepository.findByCorreo(email).orElse(null);
+    }
+
+    public Usuario findByEmail(String email) {
+        return usuarioRepository.findByCorreo(email).orElse(null);
+    }
 }

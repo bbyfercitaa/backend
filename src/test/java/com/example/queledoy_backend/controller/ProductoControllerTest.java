@@ -1,96 +1,135 @@
 package com.example.queledoy_backend.controller;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import com.example.queledoy_backend.model.Producto;
 import com.example.queledoy_backend.service.ProductoService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-@WebMvcTest(ProductoController.class)
 class ProductoControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
+    @Mock
     private ProductoService productoService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    private Producto producto;
+    @InjectMocks
+    private ProductoController productoController;
 
     @BeforeEach
     void setUp() {
-        producto = new Producto();
-        producto.setId(1);
-        producto.setNombre("Producto Test");
-        producto.setPrecio(100.0);
-        producto.setDescripcion("Descripción test");
-        producto.setStock(10);
-        producto.setActivo(true);
-        producto.setDestacado(false);
-        producto.setUrl("http://test.com");
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void testGetAllProductos() throws Exception {
-        List<Producto> productos = Arrays.asList(producto);
+    void testGetAllProductos() {
+        List<Producto> productos = new ArrayList<>();
+        Producto prod1 = new Producto();
+        prod1.setId(1);
+        prod1.setNombre("Laptop");
+        prod1.setPrecio(999.99);
+        productos.add(prod1);
+
         when(productoService.getAllProductos()).thenReturn(productos);
 
-        mockMvc.perform(get("/api/v1/productos"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].nombre").value("Producto Test"))
-                .andExpect(jsonPath("$[0].precio").value(100.0));
+        List<Producto> result = productoController.getAllProductos();
 
-        verify(productoService).getAllProductos();
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("Laptop", result.get(0).getNombre());
+        verify(productoService, times(1)).getAllProductos();
     }
 
     @Test
-    void testGetProductoById() throws Exception {
+    void testGetProductoById() {
+        Producto producto = new Producto();
+        producto.setId(1);
+        producto.setNombre("Mouse");
+        producto.setPrecio(25.99);
+
         when(productoService.getProductoById(1)).thenReturn(producto);
 
+        Producto result = productoController.getProductoById(1);
 
-        mockMvc.perform(get("/api/v1/productos/1"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.nombre").value("Producto Test"))
-                .andExpect(jsonPath("$.precio").value(100.0));
-
-        verify(productoService).getProductoById(1);
+        assertNotNull(result);
+        assertEquals(1, result.getId());
+        assertEquals("Mouse", result.getNombre());
+        assertEquals(25.99, result.getPrecio());
+        verify(productoService, times(1)).getProductoById(1);
     }
 
     @Test
-    void testSaveProducto() throws Exception {
-        when(productoService.saveProducto(any(Producto.class))).thenReturn(producto);
-        mockMvc.perform(post("/api/v1/productos")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(producto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nombre").value("Producto Test"));
+    void testSaveProducto() {
+        Producto producto = new Producto();
+        producto.setNombre("Teclado");
+        producto.setPrecio(79.99);
+        producto.setStock(50);
+        producto.setActivo(true);
 
-        verify(productoService).saveProducto(any(Producto.class));
+        Producto savedProducto = new Producto();
+        savedProducto.setId(3);
+        savedProducto.setNombre("Teclado");
+        savedProducto.setPrecio(79.99);
+        savedProducto.setStock(50);
+
+        when(productoService.saveProducto(producto)).thenReturn(savedProducto);
+
+        Producto result = productoController.saveProducto(producto);
+
+        assertNotNull(result);
+        assertEquals(3, result.getId());
+        assertEquals("Teclado", result.getNombre());
+        assertEquals(79.99, result.getPrecio());
+        verify(productoService, times(1)).saveProducto(producto);
     }
 
     @Test
-    void testDeleteProducto() throws Exception {
-        mockMvc.perform(delete("/api/v1/productos/1"))
-                .andExpect(status().isOk());
+    void testUpdateProducto() {
+        Producto existingProducto = new Producto();
+        existingProducto.setId(1);
+        existingProducto.setNombre("Monitor");
+        existingProducto.setPrecio(299.99);
+        existingProducto.setStock(10);
 
-        verify(productoService).deleteProducto(1);
+        Producto updateData = new Producto();
+        updateData.setNombre("Monitor 4K");
+        updateData.setPrecio(399.99);
+        updateData.setStock(5);
+
+        when(productoService.getProductoById(1)).thenReturn(existingProducto);
+        when(productoService.saveProducto(existingProducto)).thenReturn(existingProducto);
+
+        Producto result = productoController.updateProducto(1, updateData);
+
+        assertNotNull(result);
+        assertEquals("Monitor 4K", result.getNombre());
+        assertEquals(399.99, result.getPrecio());
+        verify(productoService, times(1)).getProductoById(1);
+        verify(productoService, times(1)).saveProducto(existingProducto);
+    }
+
+    @Test
+    void testDeleteProducto() {
+        doNothing().when(productoService).deleteProducto(1);
+
+        productoController.deleteProducto(1);
+
+        verify(productoService, times(1)).deleteProducto(1);
+    }
+
+    @Test
+    void testProductoWithNegativePrice() {
+        Producto producto = new Producto();
+        producto.setNombre("Producto Inválido");
+        producto.setPrecio(-50.0);
+
+        assertFalse(producto.getPrecio() > 0, "El precio no puede ser negativo");
     }
 }

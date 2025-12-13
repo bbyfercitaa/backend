@@ -16,7 +16,7 @@ import com.example.queledoy_backend.service.GeneroService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/genero")
+@RequestMapping("/api/v1/generos")
 public class GeneroController {
 
     @Autowired
@@ -39,8 +39,12 @@ public class GeneroController {
 
     @PutMapping("/{id}")
     public Genero updateGenero(@PathVariable Integer id, @RequestBody Genero genero) {
-        genero.setId(id);
-        return generoService.saveGenero(genero);
+        Genero existingGenero = generoService.getGeneroById(id);
+        if (existingGenero != null) {
+            existingGenero.setNombre(genero.getNombre());
+            return generoService.saveGenero(existingGenero);
+        }
+        return null;
     }
 
     @DeleteMapping("/{id}")

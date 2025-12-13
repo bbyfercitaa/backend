@@ -39,8 +39,18 @@ public class UsuarioController {
 
     @PutMapping("/{id}")
     public Usuario updateUsuario(@PathVariable Integer id, @RequestBody Usuario usuario) {
-        usuario.setId(id);
-        return usuarioService.saveUsuario(usuario);
+        Usuario existingUsuario = usuarioService.getUsuarioById(id);
+        if (existingUsuario != null) {
+            existingUsuario.setNombre(usuario.getNombre());
+            existingUsuario.setCorreo(usuario.getCorreo());
+            existingUsuario.setContrasena(usuario.getContrasena());
+            existingUsuario.setActivo(usuario.getActivo());
+            existingUsuario.setFechaRegistro(usuario.getFechaRegistro());
+            existingUsuario.setRol(usuario.getRol());
+            existingUsuario.setLista(usuario.getLista());
+            return usuarioService.saveUsuario(existingUsuario);
+        }
+        return null;
     }
 
     @DeleteMapping("/{id}")

@@ -16,7 +16,7 @@ import com.example.queledoy_backend.service.CategoriaService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/categoria")
+@RequestMapping("/api/v1/categorias")
 public class CategoriaController {
 
     @Autowired
@@ -28,23 +28,27 @@ public class CategoriaController {
     }
 
     @GetMapping("/{id}")
-    public Categoria getCategoriaById(@PathVariable Integer id) {
-        return categoriaService.getCategoriaById(id);
+    public Categoria getCategoriasById(@PathVariable Integer id) {
+        return categoriaService.getCategoriasById(id);
     }
 
     @PostMapping
-    public Categoria saveCategoria(@RequestBody Categoria categoria) {
-        return categoriaService.saveCategoria(categoria);
+    public Categoria saveCategorias(@RequestBody Categoria categoria) {
+        return categoriaService.saveCategorias(categoria);
     }
 
     @PutMapping("/{id}")
     public Categoria updateCategoria(@PathVariable Integer id, @RequestBody Categoria categoria) {
-        categoria.setId(id);
-        return categoriaService.saveCategoria(categoria);
+        Categoria existingCategoria = categoriaService.getCategoriasById(id);
+        if (existingCategoria != null) {
+            existingCategoria.setNombre(categoria.getNombre());
+            return categoriaService.saveCategorias(existingCategoria);
+        }
+        return null;
     }
 
     @DeleteMapping("/{id}")
-    public void deleteCategoria(@PathVariable Integer id) {
-        categoriaService.deleteCategoria(id);
+    public void deleteCategorias(@PathVariable Integer id) {
+        categoriaService.deleteCategorias(id);
     }
 }
